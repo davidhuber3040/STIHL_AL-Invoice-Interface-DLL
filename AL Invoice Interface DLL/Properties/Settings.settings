@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="AL_Invoice_Interface_DLL.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="AL_Invoice_Interface_DLL_financeService_FiscalizationService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://efiskalizimi-test.tatime.gov.al:443/FiscalizationService-v3</Value>
+    </Setting>
+    <Setting Name="AL_Invoice_Interface_DLL_eInvoiceService_EinvoiceService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://einvoice-test.tatime.gov.al:443/EinvoiceService-v1</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

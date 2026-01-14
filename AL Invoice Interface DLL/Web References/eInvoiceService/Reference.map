@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://einvoice-test.tatime.gov.al/EinvoiceService-v1/alimc-einvoice-service.xsd" filename="alimc-einvoice-service.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="https://einvoice-test.tatime.gov.al/EinvoiceService-v1/EinvoiceService.wsdl" filename="EinvoiceService.wsdl" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://einvoice-test.tatime.gov.al/EinvoiceService-v1/xmldsig-core-schema.xsd" filename="xmldsig-core-schema.xsd" />
+  </Results>
+</DiscoveryClientResultsFile>
