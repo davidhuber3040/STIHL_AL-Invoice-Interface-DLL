@@ -7466,7 +7466,7 @@ namespace AL_Invoice_Interface_DLL.financeService {
         
         private string iICRefField;
         
-        private System.DateTime issueDateTimeField;
+        private string issueDateTimeField;
         
         private CorrectiveInvTypeSType typeField;
         
@@ -7483,7 +7483,7 @@ namespace AL_Invoice_Interface_DLL.financeService {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public System.DateTime IssueDateTime {
+        public string IssueDateTime {
             get {
                 return this.issueDateTimeField;
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace AL_Invoice_Interface_DLL
@@ -91,14 +92,32 @@ namespace AL_Invoice_Interface_DLL
             };
         }
 
-        public void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT)
+        public void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT, string CorrectiveInvIICRef, string CorrectiveInvIssueDateTime,string CorrInvType)
         {
+
+            
+
+
             _invoice.SupplyDateOrPeriod = new SupplyDateOrPeriodType();
             _invoice.SupplyDateOrPeriod.Start = SupplyDateOrPeriodStart;
             _invoice.SupplyDateOrPeriod.End = SupplyDateOrPeriodEnd;
 
             _invoice.IsIssuerInVAT = IsIssuerInVAT;
-           
+
+            if (CorrectiveInvIICRef!="")
+            { 
+                _invoice.CorrectiveInv=new CorrectiveInvType();
+                _invoice.CorrectiveInv.IICRef = CorrectiveInvIICRef;
+                _invoice.CorrectiveInv.IssueDateTime = CorrectiveInvIssueDateTime;
+                _invoice.CorrectiveInv.Type = (CorrectiveInvTypeSType)Enum.Parse(typeof(CorrectiveInvTypeSType), CorrInvType);
+
+             }
+            
+
+
+
+
+
         }
 
 
@@ -118,7 +137,7 @@ namespace AL_Invoice_Interface_DLL
             };
         }
 
-        public void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge)
+        public void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge, string EX)
         {
             InvoiceItemType line = new InvoiceItemType();
 
@@ -138,10 +157,19 @@ namespace AL_Invoice_Interface_DLL
 
             line.VA = ToMoney(vatAmount);
             line.VASpecified = true;
+          
 
             // Reverse Charge (auf RR gemappt)
             line.RR = isReverseCharge;
             line.RRSpecified = true;
+
+            if (EX != "")
+            {
+
+                line.EX = (ExemptFromVATSType)Enum.Parse(typeof(ExemptFromVATSType), EX);
+                line.EXSpecified = !string.IsNullOrEmpty(EX);
+            }
+
 
             // R (Rabatt), IN (Included VAT), EX (Exempt) lassen wir in dieser Funktion bewusst leer
 
@@ -204,7 +232,7 @@ namespace AL_Invoice_Interface_DLL
           
         }
 
-      
+   
 
         public void _39AddSameTaxType(int numOfItems, double VATRate, bool VATRateSpecified ,  string exemptFromVATSameTaxItemSType, double priceBefVAT, double VATAmt, bool VATAmtSpecified)
         {
@@ -333,7 +361,7 @@ namespace AL_Invoice_Interface_DLL
 
         }
 
-        public void _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave)
+        public string _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave)
         {
             if (_SignedSoapRequest == "") 
             {
@@ -347,6 +375,9 @@ namespace AL_Invoice_Interface_DLL
             {
                 File.WriteAllText(RequestFilePathToSave, _SignedSoapRequest, Encoding.ASCII);
             }
+
+            
+
 
             string fiscalResponse = "";
             
@@ -375,8 +406,35 @@ namespace AL_Invoice_Interface_DLL
             if (ResponseFilePathToSave != "")
                 File.WriteAllText(ResponseFilePathToSave, fiscalResponse, Encoding.ASCII);
 
+
+            try
+
+            {
+                return ReadFicFromSoap(fiscalResponse);
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return "";
+
+
+
         }
-       
+
+
+
+        public static string ReadFicFromSoap(string soapXml)
+        {
+            var doc = XDocument.Parse(soapXml);
+
+            XNamespace fiscalNs = "https://eFiskalizimi.tatime.gov.al/FiscalizationService/schema";
+
+            // FIC steht direkt unter RegisterInvoiceResponse
+            return doc.Descendants(fiscalNs + "FIC").FirstOrDefault()?.Value;
+        }
 
         private decimal ToMoney(decimal value)
         {

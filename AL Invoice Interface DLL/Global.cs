@@ -82,6 +82,7 @@ namespace Stihl.Albania.Fiscalization
 
             iic = resp.IIC;
             iicSignature = resp.IICSignature;
+         
         }
 
         public static string _03GetIIC()

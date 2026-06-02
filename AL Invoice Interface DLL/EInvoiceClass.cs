@@ -3,12 +3,15 @@ using AL_Invoice_Interface_DLL.financeService;
 using Stihl.Albania.Fiscalization;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using UblSharp;
 using UblSharp.CommonAggregateComponents;
@@ -29,6 +32,12 @@ namespace AL_Invoice_Interface_DLL
         public string _signedSoapRequest = "";
 
 
+
+
+
+
+
+
         public void _50NewInvoice()
         {
             _request = new RegisterEinvoiceRequest();
@@ -45,11 +54,7 @@ namespace AL_Invoice_Interface_DLL
 
         }
 
-        public void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string OrderReferenceID, string PeriodeDescriptionCode
-            
-
-
-            )
+        public void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID,string IssueDate, string DueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue,string TaxCurrencyCode)
         {
 
             _request.Header.UUID = uuid;
@@ -72,53 +77,40 @@ namespace AL_Invoice_Interface_DLL
 
             _invoice.CustomizationID = "urn:cen.eu:en16931:2017";
 
-            _invoice.UBLVersionID = UBLVersionID;
+            _invoice.UBLVersionID = UBLVersionID=="" ? null : UBLVersionID;
             _invoice.ID = ID;
             _invoice.IssueDate = IssueDate;
+            _invoice.DueDate = DueDate;
+
 
             _invoice.ProfileID = "P2";
 
+            _invoice.TaxCurrencyCode = TaxCurrencyCode;
       
 
 
             _invoice.InvoiceTypeCode = new CodeType
             {
-                listID = InvTypelistID,
-                listAgencyID = InvTypelistAgencyID,
-                Value = InvTypeValue,
+                listID = string.IsNullOrWhiteSpace(InvTypelistID) ?  null : InvTypelistID,
+                listAgencyID = string.IsNullOrWhiteSpace(InvTypelistAgencyID) ? null : InvTypelistAgencyID,
+                Value = string.IsNullOrWhiteSpace(InvTypeValue) ? null : InvTypeValue,
             };
             //_invoice.TaxPointDate = TaxPointDate;
             _invoice.DocumentCurrencyCode = new CodeType
             {
-                listID = DocumentCurrencyCodelistID,
-                listAgencyID = DocumentCurrencyCodelistAgencyID,
-                Value = DocumentCurrencyCodeValue,
+                listID = string.IsNullOrWhiteSpace(DocumentCurrencyCodelistID) ?  null : DocumentCurrencyCodelistID,
+                listAgencyID = string.IsNullOrWhiteSpace(DocumentCurrencyCodelistAgencyID) ? null : DocumentCurrencyCodelistAgencyID,
+                Value = string.IsNullOrWhiteSpace(DocumentCurrencyCodeValue) ? null :  DocumentCurrencyCodeValue,
             };
 
 
-            _invoice.InvoicePeriod = new List<PeriodType>()
-                {
-                    new PeriodType
-                    {
-                        //StartDate = _invoicePeriodStartDate,
-                        //EndDate = _invoicePeriodEndDate,
-                       
-                        DescriptionCode=new List<CodeType>()
-                        {
-                            new CodeType
-                            {
-                                Value=PeriodeDescriptionCode,
-                            }
-                        },
-                        
-                        
-                    }
-                };
+            /*
             _invoice.OrderReference = new OrderReferenceType
             {
                 ID = OrderReferenceID,
-            };
+            };*/
 
+           
             _invoice.Xmlns = new System.Xml.Serialization.XmlSerializerNamespaces(new[]
            {
                 new XmlQualifiedName("cac","urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"),
@@ -128,7 +120,7 @@ namespace AL_Invoice_Interface_DLL
         }
 
 
-        public void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate)
+        public void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate, string IIC, string iicSignature)
         {
             string issueDateTimeStr = issueDateTime;//.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture);
             string badDebtStr = isBadDebtInv ? "true" : "false";
@@ -146,13 +138,24 @@ namespace AL_Invoice_Interface_DLL
         new TextType { Value = $"AmountWoVatLek={amountWoVatStr}#AAI#" },
         new TextType { Value = $"AmountWithVatLek={amountWithVatStr}#AAI#" },
         new TextType { Value = $"SumOfTaxableAmountLek={sumTaxableStr}#AAI#" },
-        new TextType { Value = $"IIC={Global.iic}#AAI#" },
+        new TextType { Value = $"IIC={IIC}#AAI#" },
         new TextType { Value = $"FIC={fic}" },
-        new TextType { Value = $"IICSignature={Global.iicSignature}#AAI#" }
+        new TextType { Value = $"IICSignature={iicSignature}#AAI#" }
     };
 
             // <cbc:TaxPointDate>2025-12-04</cbc:TaxPointDate>
             _invoice.TaxPointDate = taxPointDate;//.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            _invoice.InvoicePeriod = new List<PeriodType>()
+                {
+                    new PeriodType
+                    {
+                        StartDate = taxPointDate,
+                        EndDate = taxPointDate,
+
+                    }
+                };
+
+
         }
 
 
@@ -167,18 +170,20 @@ namespace AL_Invoice_Interface_DLL
                 {
                     EndpointID = new IdentifierType
                     {
-                        schemeID = EndpointID,
-                        schemeAgencyID = EndpointAgencyID,
+                         schemeID = string.IsNullOrWhiteSpace(EndpointID) ? null : EndpointID,
+           
+                        schemeAgencyID = string.IsNullOrWhiteSpace(EndpointAgencyID) ? null :  EndpointAgencyID,
                         Value = EndpointValue
                     },
                     PartyIdentification = new List<PartyIdentificationType>()
                     {
                         new PartyIdentificationType
                         {
-                            ID = new IdentifierType
+                            ID = new IdentifierType()
                             {
-                                schemeID = PartyIdentificationID,
-                                Value = PartyIdentificationValue
+
+                                schemeID = string.IsNullOrWhiteSpace(PartyIdentificationID) ? null :  PartyIdentificationID,
+                                Value = string.IsNullOrWhiteSpace(PartyIdentificationValue) ? null : PartyIdentificationValue
                             }
                         }
                     },
@@ -193,25 +198,25 @@ namespace AL_Invoice_Interface_DLL
                     {
                         ID = new IdentifierType
                         {
-                            schemeID = PostalAddressSchemeAgencyID,
-                            schemeAgencyID = PostalAddressSchemeAgencyID,
-                            Value = PostalAddressSchemeValue
+                            schemeID = string.IsNullOrWhiteSpace(PostalAddressSchemeAgencyID) ? null :  PostalAddressSchemeAgencyID,
+                            schemeAgencyID = string.IsNullOrWhiteSpace(PostalAddressSchemeAgencyID) ? null :  PostalAddressSchemeAgencyID,
+                            Value = string.IsNullOrWhiteSpace(PostalAddressSchemeValue) ? null :  PostalAddressSchemeValue
                         },
                         //Postbox = "5467",
                         StreetName = StreetName,
-                        AdditionalStreetName = AdditionalStreetName,
+                        AdditionalStreetName = string.IsNullOrWhiteSpace(AdditionalStreetName) ? null :  AdditionalStreetName,
                         //BuildingNumber = "1",
                         //Department = "Revenue department",
-                        CityName = CityName,
-                        PostalZone = PostalZone,
+                        CityName = string.IsNullOrWhiteSpace(CityName) ? null :  CityName,
+                        PostalZone = string.IsNullOrWhiteSpace(PostalZone) ? null :  PostalZone,
                         //CountrySubentityCode = "RegionA",
                         Country = new CountryType
                         {
                             IdentificationCode = new CodeType
                             {
-                                listID = CountrylistID,
-                                listAgencyID = CountrylistAgencyID,
-                                Value = CountrylistValue,
+                                listID = string.IsNullOrWhiteSpace(CountrylistID) ? null : CountrylistID,
+                                listAgencyID = string.IsNullOrWhiteSpace(CountrylistAgencyID) ? null : CountrylistAgencyID,
+                                Value = string.IsNullOrWhiteSpace(CountrylistValue) ? null : CountrylistValue,
                             }
                         }
                     },
@@ -229,17 +234,17 @@ namespace AL_Invoice_Interface_DLL
                             {
                                 CompanyID = new IdentifierType
                                 {
-                                    schemeID = CompanyID,
-                                    schemeAgencyID = CompanyAgencyID,
-                                    Value = CompanyValue
+                                    schemeID =  string.IsNullOrWhiteSpace(CompanyID) ? null : CompanyID,
+                                    schemeAgencyID = string.IsNullOrWhiteSpace(CompanyAgencyID) ? null : CompanyAgencyID,
+                                    Value = string.IsNullOrWhiteSpace(CompanyValue) ? null : CompanyValue
                                 },
                                 TaxScheme = new TaxSchemeType
                                 {
                                     ID = new IdentifierType
                                     {
-                                        schemeID = TaxSchemeID,
-                                        schemeAgencyID = TaxSchemeAgencyID,
-                                        Value = TaxSchemeValue
+                                        schemeID = string.IsNullOrWhiteSpace(TaxSchemeID) ? null : TaxSchemeID,
+                                        schemeAgencyID = string.IsNullOrWhiteSpace(TaxSchemeAgencyID) ? null : TaxSchemeAgencyID,
+                                        Value = string.IsNullOrWhiteSpace(TaxSchemeValue) ? null : TaxSchemeValue
                                     }
                                 }
                             }
@@ -251,11 +256,11 @@ namespace AL_Invoice_Interface_DLL
                                 RegistrationName = PartyLegalRegistrationName,
                                 CompanyID = new IdentifierType
                                 {
-                                    schemeID = PartyLegalID,
-                                    schemeAgencyID = PartyLegalAgencyID,
-                                    Value = PartyLegalValue
+                                    schemeID = string.IsNullOrWhiteSpace(PartyLegalID) ? null :PartyLegalID,
+                                    schemeAgencyID = string.IsNullOrWhiteSpace(PartyLegalAgencyID) ? null : PartyLegalAgencyID,
+                                    Value = string.IsNullOrWhiteSpace(PartyLegalValue) ? null : PartyLegalValue
                                 },
-                                RegistrationAddress = new AddressType
+                                RegistrationAddress = (PartyLegalRegisAddrCity=="" && PartyLegalRegisAddrCountryIdentCode=="") ? null : new AddressType
                                 {
                                     CityName = PartyLegalRegisAddrCity,
                                     //CountrySubentity = "RegionA",
@@ -280,9 +285,9 @@ namespace AL_Invoice_Interface_DLL
                 {
                     EndpointID = new IdentifierType
                     {
-                        schemeID = EndpointID,
-                        schemeAgencyID = EndpointAgencyID,
-                        Value = EndpointValue
+                        schemeID = string.IsNullOrWhiteSpace(EndpointID) ? null : EndpointID,
+                        schemeAgencyID = string.IsNullOrWhiteSpace(EndpointAgencyID) ? null : EndpointAgencyID,
+                        Value = string.IsNullOrWhiteSpace(EndpointValue) ? null : EndpointValue
                     },
                     PartyIdentification = new List<PartyIdentificationType>()
                     {
@@ -290,8 +295,8 @@ namespace AL_Invoice_Interface_DLL
                         {
                             ID = new IdentifierType
                             {
-                                schemeID = PartyIdentificationID,
-                                Value = PartyIdentificationValue
+                                schemeID = string.IsNullOrWhiteSpace(PartyIdentificationID) ? null : PartyIdentificationID,
+                                Value = string.IsNullOrWhiteSpace(PartyIdentificationValue) ? null : PartyIdentificationValue
                             }
                         }
                     },
@@ -304,26 +309,28 @@ namespace AL_Invoice_Interface_DLL
                     },
                     PostalAddress = new AddressType
                     {
+                        /*
                         ID = new IdentifierType
                         {
-                            schemeID = PostalAddressSchemeAgencyID,
-                            schemeAgencyID = PostalAddressSchemeAgencyID,
+                            schemeID = string.IsNullOrWhiteSpace(PostalAddressSchemeAgencyID) ? null :  PostalAddressSchemeAgencyID,
+                            schemeAgencyID = string.IsNullOrWhiteSpace(PostalAddressSchemeAgencyID) ? null :  PostalAddressSchemeAgencyID,
                             Value = PostalAddressSchemeValue
-                        },
+                        },*/
+
                         //Postbox = "5467",
-                        StreetName = StreetName,
-                        AdditionalStreetName = AdditionalStreetName,
+                        StreetName = StreetName=="" ? null : StreetName,
+                        AdditionalStreetName = AdditionalStreetName=="" ? null :AdditionalStreetName,
                         //BuildingNumber = "1",
                         //Department = "Revenue department",
-                        CityName = CityName,
-                        PostalZone = PostalZone,
+                        CityName = CityName=="" ? null :CityName,
+                        PostalZone = PostalZone=="" ? null : PostalZone,
                         //CountrySubentityCode = "RegionA",
-                        Country = new CountryType
+                        Country = CountrylistValue=="" ? null : new CountryType
                         {
                             IdentificationCode = new CodeType
                             {
-                                listID = CountrylistID,
-                                listAgencyID = CountrylistAgencyID,
+                                listID = string.IsNullOrWhiteSpace(CountrylistID) ? null :  CountrylistID,
+                                listAgencyID = string.IsNullOrWhiteSpace(CountrylistAgencyID) ? null :  CountrylistAgencyID,
                                 Value = CountrylistValue,
                             }
                         }
@@ -340,16 +347,16 @@ namespace AL_Invoice_Interface_DLL
                             {
                                 CompanyID = new IdentifierType
                                 {
-                                    schemeID = CompanyID,
-                                    schemeAgencyID = CompanyAgencyID,
+                                    schemeID = string.IsNullOrWhiteSpace(CompanyID) ? null : CompanyID,
+                                    schemeAgencyID = string.IsNullOrWhiteSpace(CompanyAgencyID) ? null : CompanyAgencyID,
                                     Value = CompanyValue
                                 },
                                 TaxScheme = new TaxSchemeType
                                 {
                                     ID = new IdentifierType
                                     {
-                                        schemeID = TaxSchemeID,
-                                        schemeAgencyID = TaxSchemeAgencyID,
+                                        schemeID = string.IsNullOrWhiteSpace(TaxSchemeID) ? null : TaxSchemeID,
+                                        schemeAgencyID = string.IsNullOrWhiteSpace(TaxSchemeAgencyID) ? null : TaxSchemeAgencyID,
                                         Value = TaxSchemeValue
                                     }
                                 }
@@ -359,18 +366,18 @@ namespace AL_Invoice_Interface_DLL
                         {
                             new PartyLegalEntityType
                             {
-                                RegistrationName = PartyLegalRegistrationName,
-                                CompanyID = new IdentifierType
+                                RegistrationName = PartyLegalRegistrationName=="" ? null : PartyLegalRegistrationName,
+                                CompanyID =PartyLegalValue== ""? null : new IdentifierType
                                 {
-                                    schemeID = PartyLegalID,
-                                    schemeAgencyID = PartyLegalAgencyID,
+                                    schemeID = string.IsNullOrWhiteSpace(PartyLegalID) ? null : PartyLegalID,
+                                    schemeAgencyID = string.IsNullOrWhiteSpace(PartyLegalAgencyID) ? null : PartyLegalAgencyID,
                                     Value = PartyLegalValue
                                 },
-                                RegistrationAddress = new AddressType
+                                RegistrationAddress =PartyLegalRegisAddrCountryIdentCode=="" && PartyLegalRegisAddrCity=="" ? null:  new AddressType
                                 {
-                                    CityName = PartyLegalRegisAddrCity,
+                                    CityName = PartyLegalRegisAddrCity=="" ? null :PartyLegalRegisAddrCity,
                                     //CountrySubentity = "RegionA",
-                                    Country = new CountryType
+                                    Country =PartyLegalRegisAddrCountryIdentCode=="" ? null :  new CountryType
                                     {
                                         IdentificationCode = PartyLegalRegisAddrCountryIdentCode
                                     }
@@ -378,7 +385,7 @@ namespace AL_Invoice_Interface_DLL
 
                             }
 
-                };
+                }; 
         }
 
         public void _57PayeeParty(string PartyIdentificationID, string PartyIdentificationAgencyID, string PartyIdentificationValue, string Name, string PartyLegalID, string PartyLegalAgencyID, string PartyLegaValue)
@@ -393,7 +400,7 @@ namespace AL_Invoice_Interface_DLL
                     {
                         ID = new IdentifierType
                         {
-                            schemeID = PartyIdentificationID,
+                            schemeID = string.IsNullOrWhiteSpace(PartyIdentificationID) ? null : PartyIdentificationID,
 
                             Value = PartyIdentificationValue
                         }
@@ -412,8 +419,8 @@ namespace AL_Invoice_Interface_DLL
                     {
                         CompanyID = new IdentifierType
                         {
-                            schemeID = PartyLegalID,
-                            schemeAgencyID = PartyLegalAgencyID,
+                            schemeID = string.IsNullOrWhiteSpace(PartyLegalID) ? null : PartyLegalID,
+                            schemeAgencyID = string.IsNullOrWhiteSpace(PartyLegalAgencyID) ? null : PartyLegalAgencyID,
                             Value = PartyLegaValue
                         }
                     }
@@ -433,8 +440,8 @@ namespace AL_Invoice_Interface_DLL
                         {
                             ID = new IdentifierType
                             {
-                                schemeID = DeliveryLocationID,
-                                schemeAgencyID = DeliveryLocationAgencyID,
+                                schemeID = string.IsNullOrWhiteSpace(DeliveryLocationID) ? null : DeliveryLocationID,
+                                schemeAgencyID = string.IsNullOrWhiteSpace(DeliveryLocationAgencyID) ? null : DeliveryLocationAgencyID,
                                 Value = DeliveryLocationValue
                             },
                             Address = new AddressType
@@ -456,7 +463,7 @@ namespace AL_Invoice_Interface_DLL
 
         }
 
-        public void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID)
+        public void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID, string PayeeFinancialAccountName)
         {
             if (PaymentDueDate!="")
             {
@@ -467,34 +474,38 @@ namespace AL_Invoice_Interface_DLL
                 {
                     new PaymentMeansType
                     {
-                        PaymentMeansCode = new CodeType
+                        PaymentMeansCode = PaymentMeansID=="" && PaymentMeansValue=="" ? null :  new CodeType
                         {
-                            listID =PaymentMeansID,
-                            Value = PaymentMeansValue
+                            listID =string.IsNullOrWhiteSpace(PaymentMeansID) ? null : PaymentMeansID,
+                            Value = string.IsNullOrWhiteSpace(PaymentMeansValue) ? null :PaymentMeansValue
                         },
-                       
-                        PaymentDueDate = PaymentDueDate,
-                        PaymentChannelCode = PaymentChannelCode,
-                        PaymentID = new List<IdentifierType>()
+
+                        PaymentDueDate = string.IsNullOrWhiteSpace(PaymentDueDate) ? null :PaymentDueDate,
+                        PaymentChannelCode = string.IsNullOrWhiteSpace(PaymentChannelCode) ? null :PaymentChannelCode,
+                        PaymentID = string.IsNullOrWhiteSpace(PaymentIDValue) ? null : new List<IdentifierType>()
                         {
                             new IdentifierType
                             {
                                 Value = PaymentIDValue
                             }
                         },
-                        PayeeFinancialAccount = new FinancialAccountType
+
+                        PayeeFinancialAccount = PayeeFinancialAccountID=="" && PayeeFinancialAccountName=="" && PayeeFinancialInstID=="" ? null : new FinancialAccountType
                         {
-                            ID = PayeeFinancialAccountID,
-                            FinancialInstitutionBranch = new BranchType
+                            ID = string.IsNullOrWhiteSpace(PayeeFinancialAccountID) ? null :PayeeFinancialAccountID,
+                            Name= string.IsNullOrWhiteSpace(PayeeFinancialAccountName) ? null : PayeeFinancialAccountName,
+                            FinancialInstitutionBranch =string.IsNullOrWhiteSpace(PayeeFinancialInstID) ? null : new BranchType
                             {
-                                FinancialInstitution = new FinancialInstitutionType
+                                ID= PayeeFinancialInstID
+                                /*
+                                FinancialInstitution = PayeeFinancialInstID=="" ? null :  new FinancialInstitutionType
                                 {
                                     ID = PayeeFinancialInstID
-                                }
+                                }*/
                             }
                         }
                     }
-                };
+                };   
            
         }
 
@@ -513,10 +524,15 @@ namespace AL_Invoice_Interface_DLL
                     }
                 };
         }
-        public void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue)
+
+        public void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string TaxExemptionReasonCode, string TaxExemptionReason)
         {
+            if (_invoice.TaxTotal == null || !_invoice.TaxTotal.Any())
+                _invoice.TaxTotal = new List<TaxTotalType> { new TaxTotalType() };
+
             if (_invoice.TaxTotal.First().TaxSubtotal == null)
                 _invoice.TaxTotal.First().TaxSubtotal = new List<TaxSubtotalType>();
+
             TaxSubtotalType taxSub = new TaxSubtotalType
             {
                 TaxableAmount = new AmountType
@@ -533,8 +549,8 @@ namespace AL_Invoice_Interface_DLL
                 {
                     ID = new IdentifierType
                     {
-                        schemeID = TaxCategoryID,
-                        schemeAgencyID = TaxCategoryAgencyID,
+                        schemeID = string.IsNullOrWhiteSpace(TaxCategoryID) ? null : TaxCategoryID,
+                        schemeAgencyID = string.IsNullOrWhiteSpace(TaxCategoryAgencyID) ? null : TaxCategoryAgencyID,
                         Value = TaxCategoryValue
                     },
                     Percent = (decimal)Percent,
@@ -542,18 +558,34 @@ namespace AL_Invoice_Interface_DLL
                     {
                         ID = new IdentifierType
                         {
-                            schemeID = TaxSchemeID,
-                            schemeAgencyID = TaxSchemeAgencyID,
+                            schemeID = string.IsNullOrWhiteSpace(TaxSchemeID) ? null : TaxSchemeID,
+                            schemeAgencyID = string.IsNullOrWhiteSpace(TaxSchemeAgencyID) ? null : TaxSchemeAgencyID,
                             Value = TaxSchemeValue
                         }
                     }
                 }
             };
 
+            if (!string.IsNullOrWhiteSpace(TaxExemptionReasonCode))
+            {
+                taxSub.TaxCategory.TaxExemptionReasonCode = new CodeType
+                {
+                    Value = TaxExemptionReasonCode
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(TaxExemptionReason))
+            {
+                taxSub.TaxCategory.TaxExemptionReason = new List<TextType>
+        {
+            new TextType
+            {
+                Value = TaxExemptionReason
+            }
+        };
+            }
 
             _invoice.TaxTotal.First().TaxSubtotal.Add(taxSub);
-
-
         }
 
         public void _62PaymentTermns(string Value)
@@ -619,78 +651,112 @@ namespace AL_Invoice_Interface_DLL
         } };
     }
 
-        public void _64AddInvoiceLine(string ID, string InvQtyUnitCode, double InvQtyValue, string LineExtensionCurrencyID, double LineExtensionValue, string AccountingCost, string OrderLineReferenceID, string TaxTotalcurrencyID, double TaxTotalValue)
-           
+        public void _64AddInvoiceLine(string ID, string InvQtyUnitCode, double InvQtyValue, string LineExtensionCurrencyID, double LineExtensionValue, string AccountingCost, string OrderLineReferenceID, string TaxTotalcurrencyID, double TaxTotalValue/*, string TaxExemptionReasonCode, string TaxExemptionReason*/)
         {
-           
+            //bool hasTaxExemption = !string.IsNullOrWhiteSpace(TaxExemptionReasonCode) || !string.IsNullOrWhiteSpace(TaxExemptionReason);
+            bool createTaxTotal = TaxTotalValue != 0;// || hasTaxExemption;
+
             InvoiceLineType line =
-                  new InvoiceLineType
-                  {
-                      ID = ID,
-                      /*Note = new List<TextType>()
-                      {
-                          new TextType
-                          {
-                              Value = Note
-                          }
-                      },*/
-                      InvoicedQuantity = new QuantityType
-                      {
-                          unitCode = InvQtyUnitCode,
-                          Value = (decimal)InvQtyValue
-                      },
-                      LineExtensionAmount = new AmountType
-                      {
-                          currencyID = LineExtensionCurrencyID,
-                          Value = (decimal)LineExtensionValue,
-                      },
-                      AccountingCost = AccountingCost,
-                      OrderLineReference = new List<OrderLineReferenceType>()
+                new InvoiceLineType
+                {
+                    ID = ID,
+
+                    InvoicedQuantity = new QuantityType
+                    {
+                        unitCode = InvQtyUnitCode,
+                        Value = (decimal)InvQtyValue
+                    },
+
+                    LineExtensionAmount = new AmountType
+                    {
+                        currencyID = LineExtensionCurrencyID,
+                        Value = (decimal)LineExtensionValue
+                    },
+
+                    AccountingCost = string.IsNullOrWhiteSpace(AccountingCost) ? null : AccountingCost,
+
+                    OrderLineReference = string.IsNullOrWhiteSpace(OrderLineReferenceID) ? null : new List<OrderLineReferenceType>
+                    {
+                new OrderLineReferenceType
+                {
+                    LineID = OrderLineReferenceID
+                }
+                    },
+
+                    TaxTotal = createTaxTotal ? new List<TaxTotalType>
+                    {
+                new TaxTotalType
+                {
+                    TaxAmount = new AmountType
+                    {
+                        currencyID = TaxTotalcurrencyID,
+                        Value = (decimal)TaxTotalValue
+                    }/*,
+
+                    TaxSubtotal = new List<TaxSubtotalType>
+                    {
+                        new TaxSubtotalType
                         {
-                            new OrderLineReferenceType
+                            TaxableAmount = new AmountType
                             {
-                                LineID = OrderLineReferenceID
+                                currencyID = LineExtensionCurrencyID,
+                                Value = (decimal)LineExtensionValue
+                            },
+
+                            TaxAmount = new AmountType
+                            {
+                                currencyID = TaxTotalcurrencyID,
+                                Value = (decimal)TaxTotalValue
                             }
-                        },
-                      TaxTotal = new List<TaxTotalType>()
-                        {
-                            new TaxTotalType
+                           
+                            ,
+
+                            TaxCategory = new TaxCategoryType
                             {
-                                TaxAmount = new AmountType
+                                TaxExemptionReasonCode = string.IsNullOrWhiteSpace(TaxExemptionReasonCode) ? null : new CodeType
                                 {
-                                    currencyID = TaxTotalcurrencyID,
-                                    Value = (decimal) TaxTotalValue
+                                    Value = TaxExemptionReasonCode
+                                },
+
+                                TaxExemptionReason = string.IsNullOrWhiteSpace(TaxExemptionReason) ? null : new List<TextType>
+                                {
+                                    new TextType
+                                    {
+                                        Value = TaxExemptionReason
+                                    }
                                 }
                             }
-                        },
-                      
+                        }
+                    }*/
+                }
+                    } : null
+                };
 
-                  };
+            line.ID.schemeID = "0160";
+
             if (_invoice.InvoiceLine == null)
-            {
                 _invoice.InvoiceLine = new List<InvoiceLineType>();
-            }
+
             _invoice.InvoiceLine.Add(line);
-  
-            }
-        
-        public void _65AddInvLineItem(string Name,string SellersItemIdentification,string StandardItemIdentificationID,string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID,string ClassifiedTaxCategoryValue,double ClassifiedTaxPercent,string TaxSchemeID, string TaxSchemeAgencyID,string TaxSchemeValue,string PriceAmountCurrId,double PriceAmountValue,string BaseQuantityUnitCode,double BaseQuantityValue)
+        }
+
+        public void _65AddInvLineItem(string Name,string SellersItemIdentification,string StandardItemIdentificationID,string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID,string ClassifiedTaxCategoryValue,double ClassifiedTaxPercent,string TaxSchemeID, string TaxSchemeAgencyID,string TaxSchemeValue,string PriceAmountCurrId,double PriceAmountValue,string BaseQuantityUnitCode,double BaseQuantityValue, string TaxExemptionReasonCode, string TaxExemptionReason)
         {
             _invoice.InvoiceLine.LastOrDefault().Item = new ItemType
             {
               
                 Name = Name,
-                SellersItemIdentification = new ItemIdentificationType
+                SellersItemIdentification = SellersItemIdentification=="" ? null : new ItemIdentificationType
                 {
                     ID = SellersItemIdentification
                 },
-                StandardItemIdentification = new ItemIdentificationType
+                StandardItemIdentification = (StandardItemIdentificationID=="" && StandardItemIdentificationAgencyID=="" && StandardItemIdentificationValue=="") ? null : new ItemIdentificationType
                 {
                     ID = new IdentifierType
                     {
-                        schemeID = StandardItemIdentificationID,
-                        schemeAgencyID = StandardItemIdentificationAgencyID,
-                        Value = StandardItemIdentificationValue
+                        schemeID = string.IsNullOrWhiteSpace(StandardItemIdentificationID) ? null : StandardItemIdentificationID,
+                        schemeAgencyID = string.IsNullOrWhiteSpace(StandardItemIdentificationAgencyID) ? null : StandardItemIdentificationAgencyID,
+                        Value = string.IsNullOrWhiteSpace(StandardItemIdentificationValue) ? null :  StandardItemIdentificationValue
                     }
                 },
               
@@ -700,18 +766,30 @@ namespace AL_Invoice_Interface_DLL
                                 {
                                     ID = new IdentifierType
                                     {
-                                        schemeID = ClassifiedTaxCategoryID,
-                                        schemeAgencyID = ClassifiedTaxCategoryAgencyID,
-                                        Value = ClassifiedTaxCategoryValue
+                                        schemeID = string.IsNullOrWhiteSpace(ClassifiedTaxCategoryID) ? null : ClassifiedTaxCategoryID,
+                                        schemeAgencyID = string.IsNullOrWhiteSpace(ClassifiedTaxCategoryAgencyID) ? null : ClassifiedTaxCategoryAgencyID,
+                                        Value = string.IsNullOrWhiteSpace(ClassifiedTaxCategoryValue) ? null :  ClassifiedTaxCategoryValue
                                     },
                                     Percent = (decimal) ClassifiedTaxPercent,
+                                    TaxExemptionReasonCode = string.IsNullOrWhiteSpace(TaxExemptionReasonCode) ? null : new CodeType
+                                    {
+                                        Value = TaxExemptionReasonCode
+                                    },
+
+                                    TaxExemptionReason = string.IsNullOrWhiteSpace(TaxExemptionReason) ? null : new List<TextType>
+                                    {
+                                        new TextType
+                                        {
+                                            Value = TaxExemptionReason
+                                        }
+                                    },
                                     TaxScheme = new TaxSchemeType
                                     {
                                         ID = new IdentifierType
                                         {
-                                            schemeID = TaxSchemeID,
-                                            schemeAgencyID = TaxSchemeAgencyID,
-                                            Value = TaxSchemeValue
+                                            schemeID = string.IsNullOrWhiteSpace(TaxSchemeID) ? null :  TaxSchemeID,
+                                            schemeAgencyID = string.IsNullOrWhiteSpace(TaxSchemeAgencyID) ? null :  TaxSchemeAgencyID,
+                                            Value = string.IsNullOrWhiteSpace(TaxSchemeValue) ? null :  TaxSchemeValue
                                         }
                                     }
                                 }
@@ -725,7 +803,7 @@ namespace AL_Invoice_Interface_DLL
                     currencyID = PriceAmountCurrId,
                     Value = (decimal)PriceAmountValue,
                 },
-                BaseQuantity = new QuantityType
+                BaseQuantity = BaseQuantityValue==0 ? null : new QuantityType
                 {
                     unitCode = BaseQuantityUnitCode,
                     Value = (decimal)BaseQuantityValue
@@ -829,6 +907,7 @@ namespace AL_Invoice_Interface_DLL
         }
 
 
+        
 
 
 
@@ -853,16 +932,33 @@ namespace AL_Invoice_Interface_DLL
             if (ResponseFilePathToSave != "")
                 File.WriteAllText(ResponseFilePathToSave, fiscalResponse, Encoding.ASCII);
 
-            RegisterEinvoiceResponse EInvoiceResponse;
+            string FaultCode, FaultText, DetailCode = "";
+            (FaultCode, FaultText, DetailCode)=  ReadSoapFault(fiscalResponse);
 
+            string ret = FaultCode + " " + DetailCode + " " + FaultText;
+
+            
+
+
+
+
+            return ret.Trim();
+
+            
+
+            /*
+            RegisterEinvoiceResponse EInvoiceResponse;
+   
             var serializerResp = new XmlSerializer(typeof(RegisterEinvoiceResponse));
             using (var reader = new StringReader(fiscalResponse))
             {
+                //TryReadSoapFault(reader);
+
                 EInvoiceResponse = (RegisterEinvoiceResponse)serializerResp.Deserialize(reader);
             }
 
-            return EInvoiceResponse.EIC;
-
+            return EInvoiceResponse.;
+            */
 
             /*
             string ublXml;
@@ -973,6 +1069,64 @@ namespace AL_Invoice_Interface_DLL
         */
 
 
+        public string test()
+        {
+            string test = System.IO.File.ReadAllText(@"C:\Temp\AL\NEU\Response.txt");
+            string FaultCode, FaultText, DetailCode = "";
+            (FaultCode, FaultText, DetailCode) = ReadSoapFault(test);
+
+
+            return FaultCode + FaultText + DetailCode;
+        }
+
+
+
+        public static (string FaultCode, string FaultText, string DetailCode) ReadSoapFault(string soapXml)
+        {
+            var doc = XDocument.Parse(soapXml);
+
+            XNamespace soap = "http://schemas.xmlsoap.org/soap/envelope/";
+
+            var fault = doc.Descendants(soap + "Fault").FirstOrDefault();
+            if (fault == null) return (null, null, null);
+
+            var faultCode = fault.Element("faultcode")?.Value;
+            var faultText = fault.Element("faultstring")?.Value;
+            var detailCode = fault.Element("detail")?.Element("code")?.Value;
+
+            return (faultCode, faultText, detailCode);
+        }
+
+
+
+        public sealed class SoapFaultInfo
+        {
+            public string FaultCode { get; set; }
+            public string FaultString { get; set; }
+            public string DetailCode { get; set; }
+            public string RequestUUID { get; set; }
+            public string ResponseUUID { get; set; }
+        }
+
+        public static SoapFaultInfo TryReadSoapFault(string soapXml)
+        {
+            var doc = XDocument.Parse(soapXml, LoadOptions.None);
+            XNamespace soap = "http://schemas.xmlsoap.org/soap/envelope/";
+
+            var fault = doc.Descendants(soap + "Fault").FirstOrDefault();
+            if (fault == null) return null;
+
+            return new SoapFaultInfo
+            {
+                FaultCode = (string)fault.Element("faultcode"),
+                FaultString = (string)fault.Element("faultstring"),
+                DetailCode = (string)fault.Element("detail")?.Element("code"),
+                RequestUUID = (string)fault.Element("detail")?.Element("requestUUID"),
+                ResponseUUID = (string)fault.Element("detail")?.Element("responseUUID")
+            };
+        }
+
+
         private string GetUBLXml()
         {
 
@@ -982,6 +1136,11 @@ namespace AL_Invoice_Interface_DLL
             StreamReader reader = new StreamReader(str);
             string text = reader.ReadToEnd();
             text=text.Replace("<?xml version=\"1.0\" encoding=\"utf-8\"?>","");
+
+            text = text.Replace("xmlns:sbc=\"urn:oasis:names:specification:ubl:schema:xsd:SignatureBasicComponents-2\" xmlns:sig=\"urn:oasis:names:specification:ubl:schema:xsd:CommonSignatureComponents-2\"", "");
+
+
+
 
             return text;    
 
@@ -1012,7 +1171,7 @@ namespace AL_Invoice_Interface_DLL
             
             _request.EinvoiceEnvelope = new EinvoiceEnvelopeType();
             _request.EinvoiceEnvelope.ItemElementName = ItemChoiceType.UblInvoice;
-            _request.EinvoiceEnvelope.Item = Encoding.UTF8.GetBytes(_signedUBLInvoice);//Encoding.UTF8.GetBytes(GetUBLXml());
+            _request.EinvoiceEnvelope.Item = Encoding.ASCII.GetBytes(_signedUBLInvoice);//Encoding.UTF8.GetBytes(GetUBLXml());
         
 
             if (_request == null)
@@ -1027,7 +1186,7 @@ namespace AL_Invoice_Interface_DLL
 
             XmlSerializer serializer = new XmlSerializer(typeof(RegisterEinvoiceRequest), root);
 
-            using (Utf8StringWriter sw = new Utf8StringWriter())
+            using (ASCIIStringWriter sw = new ASCIIStringWriter())
             {
                 serializer.Serialize(sw, _request);
                 return sw.ToString();
@@ -1037,9 +1196,9 @@ namespace AL_Invoice_Interface_DLL
 
 
 
-        private class Utf8StringWriter : StringWriter
+        private class ASCIIStringWriter : StringWriter
         {
-            public override Encoding Encoding => Encoding.UTF8;
+            public override Encoding Encoding => Encoding.ASCII;
         }
 
        

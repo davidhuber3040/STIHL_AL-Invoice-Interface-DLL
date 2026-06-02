@@ -122,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EInvoiceClass.cs" />
+    <Compile Include="ECreditNoteClass.cs" />
     <Compile Include="Interface.cs" />
     <Compile Include="SoapLogger.cs" />
     <Compile Include="TestForm.cs">

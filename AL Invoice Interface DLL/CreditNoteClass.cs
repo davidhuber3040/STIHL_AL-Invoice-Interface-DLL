@@ -27,7 +27,7 @@ namespace AL_Invoice_Interface_DLL
         public string resp;
 
         
-        public void _31CreditNoteData(string UBLVersionID, string ID, string IssueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string BillingReferenceID,string BillingReferenceIssueDate, string PeriodeDescriptionCode)
+        public void _310CreditNoteData(string UBLVersionID, string ID, string IssueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string BillingReferenceID,string BillingReferenceIssueDate, string PeriodeDescriptionCode)
         {
 
             creditnote.UBLVersionID = UBLVersionID;

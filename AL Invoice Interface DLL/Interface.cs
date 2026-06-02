@@ -1,4 +1,5 @@
-﻿using Stihl.Albania.Fiscalization;
+﻿using AL_Invoice_Interface_DLL.financeService;
+using Stihl.Albania.Fiscalization;
 using System;
 using System.IO;
 using System.Reflection;
@@ -47,13 +48,13 @@ namespace AL_Invoice_Interface_DLL
         void _32SetSeller(string idType, string idNum, string name, string address, string town, string country);
 
         [DispId(33)]
-        void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT);
+        void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT, string CorrectiveInvIICRef, string CorrectiveInvIssueDateTime, string CorrInvType);
 
         [DispId(34)]
         void _34SetBuyer(string idType, string idNum, string name, string address, string town, string country);
 
         [DispId(35)]
-        void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge);
+        void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge, string EX);
 
         [DispId(36)]
         void _36AddPayMethod(string type, double amount, string companyCardNumber);
@@ -74,7 +75,7 @@ namespace AL_Invoice_Interface_DLL
         void _42SignSoapRequest(string RequestFilePathToSave, string ResponseFilePathToSave);
 
         [DispId(43)]
-        void _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave);
+        string _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave);
 
         // --------------------------------------------------------------------
         // EInvoiceClass – UBL / eInvoice
@@ -83,10 +84,10 @@ namespace AL_Invoice_Interface_DLL
         void _50NewInvoice();
 
         [DispId(51)]
-        void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string OrderReferenceID, string PeriodeDescriptionCode);
+        void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string DueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string TaxCurrencyCode);
 
         [DispId(52)]
-        void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate);
+        void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate, string IIC, string iicSignature);
 
 
 
@@ -109,13 +110,13 @@ namespace AL_Invoice_Interface_DLL
         void _58Delivery(string ActualDeliveryDate, string DeliveryLocationID, string DeliveryLocationAgencyID, string DeliveryLocationValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountryIdentificationCode);
 
         [DispId(59)]
-        void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID);
+        void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID, string PayeeFinancialAccountName);
 
         [DispId(60)]
         void _60TaxTotal(string currencyID, double Value);
 
         [DispId(61)]
-        void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue);
+        void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string TaxExemptionReasonCode, string TaxExemptionReason);
 
         [DispId(62)]
         void _62PaymentTermns(string Value);
@@ -127,7 +128,7 @@ namespace AL_Invoice_Interface_DLL
         void _64AddInvoiceLine(string ID, string InvQtyUnitCode, double InvQtyValue, string LineExtensionCurrencyID, double LineExtensionValue, string AccountingCost, string OrderLineReferenceID, string TaxTotalcurrencyID, double TaxTotalValue);
 
         [DispId(65)]
-        void _65AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue);
+        void _65AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue, string TaxExemptionReasonCode, string TaxExemptionReason);
 
         [DispId(66)]
         void _66AddInvLineItemAllowCharge(double MultiplierFactorNumeric, string currencyID, double Amount);
@@ -145,6 +146,78 @@ namespace AL_Invoice_Interface_DLL
 
         [DispId(70)]
         string _70InvoiceSendRequest(string requestUUID, string RequestFilePathToSave, string ResponseFilePathToSave);
+
+
+        // --------------------------------------------------------------------
+        // EInvoiceClass – UBL / eInvoice
+        // --------------------------------------------------------------------
+        [DispId(350)]
+        void _350NewCreditNote();
+
+        [DispId(351)]
+        void _351CreditNoteData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string DueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string TaxCurrencyCode, string BillingReferenceID, string BillingReferenceIssueDate);
+
+        [DispId(352)]
+        void _352SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate, string IIC, string iicSignature);
+
+
+
+        [DispId(353)]
+        void _353AccSupParty(string EndpointID, string EndpointAgencyID, string EndpointValue, string PartyIdentificationID, string PartyIdentificationValue, string Name, string PostalAddressSchemeID, string PostalAddressSchemeAgencyID, string PostalAddressSchemeValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountrylistID, string CountrylistAgencyID, string CountrylistValue);
+
+        [DispId(354)]
+        void _354AccSupPartyTaxSch(string CompanyID, string CompanyAgencyID, string CompanyValue, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PartyLegalRegistrationName, string PartyLegalID, string PartyLegalAgencyID, string PartyLegalValue, string PartyLegalRegisAddrCity, string PartyLegalRegisAddrCountryIdentCode);
+
+        [DispId(355)]
+        void _355AccCustParty(string EndpointID, string EndpointAgencyID, string EndpointValue, string PartyIdentificationID, string PartyIdentificationValue, string Name, string PostalAddressSchemeID, string PostalAddressSchemeAgencyID, string PostalAddressSchemeValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountrylistID, string CountrylistAgencyID, string CountrylistValue);
+
+        [DispId(356)]
+        void _356AccCustPartyTaxSch(string CompanyID, string CompanyAgencyID, string CompanyValue, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PartyLegalRegistrationName, string PartyLegalID, string PartyLegalAgencyID, string PartyLegalValue, string PartyLegalRegisAddrCity, string PartyLegalRegisAddrCountryIdentCode);
+
+        [DispId(357)]
+        void _357PayeeParty(string PartyIdentificationID, string PartyIdentificationAgencyID, string PartyIdentificationValue, string Name, string PartyLegalID, string PartyLegalAgencyID, string PartyLegaValue);
+
+        [DispId(358)]
+        void _358Delivery(string ActualDeliveryDate, string DeliveryLocationID, string DeliveryLocationAgencyID, string DeliveryLocationValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountryIdentificationCode);
+
+        [DispId(359)]
+        void _359PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID, string PayeeFinancialAccountName);
+
+        [DispId(360)]
+        void _360TaxTotal(string currencyID, double Value);
+
+        [DispId(361)]
+        void _361AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string TaxExemptionReasonCode, string TaxExemptionReason);
+
+        [DispId(362)]
+        void _362PaymentTermns(string Value);
+
+        [DispId(363)]
+        void _363LegalMonetary(string LineExtensionID, double LineExtensionValue, string TaxExclusiveID, double TaxExclusiveValue, string TaxInclusiveID, double TaxInclusive, string AllowanceTotalID, double AllowanceTotalValue, string ChargeTotalID, double ChargeTotalValue, string PrepaidID, double PrepaidValue, string PayableRoundingID, double PayableRoundingValue, string PayableID, double PayableValue);
+
+        [DispId(364)]
+        void _364AddInvoiceLine(string ID, string InvQtyUnitCode, double InvQtyValue, string LineExtensionCurrencyID, double LineExtensionValue, string AccountingCost, string OrderLineReferenceID, string TaxTotalcurrencyID, double TaxTotalValue);
+
+        [DispId(365)]
+        void _365AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue, string TaxExemptionReasonCode, string TaxExemptionReason);
+
+        [DispId(366)]
+        void _366AddInvLineItemAllowCharge(double MultiplierFactorNumeric, string currencyID, double Amount);
+
+
+
+        [DispId(367)]
+        void _367SaveInvoice(string FilePath);
+
+        [DispId(368)]
+        void _368SignUBLInvoice(string RequestFilePathToSave, string ResponseFilePathToSave);
+
+        [DispId(369)]
+        void _369SignSoapRequest(string RequestFilePathToSave, string ResponseFilePathToSave);
+
+        [DispId(370)]
+        string _370CreditNoteSendRequest(string requestUUID, string RequestFilePathToSave, string ResponseFilePathToSave);
+
     }
 
     // Events-Interface (leer, wie bei dir)
@@ -160,12 +233,14 @@ namespace AL_Invoice_Interface_DLL
     {
         private readonly InvoiceClass _invoice;
         private readonly EInvoiceClass _eInvoice;
+        private readonly ECreditNoteClass _eCreditNote;
 
         public AL_Invoice_Interface_DLL_Class()
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             _invoice = new InvoiceClass();
             _eInvoice = new EInvoiceClass();
+            _eCreditNote = new ECreditNoteClass();
         }
 
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -269,9 +344,9 @@ namespace AL_Invoice_Interface_DLL
             _invoice._32SetSeller(idType, idNum, name, address, town, country);
         }
 
-        public void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT)
+        public void _33InvoiceData_2(DateTime SupplyDateOrPeriodStart, DateTime SupplyDateOrPeriodEnd, bool IsIssuerInVAT,string CorrectiveInvIICRef, string CorrectiveInvIssueDateTime, string CorrInvType)
         {
-            _invoice._33InvoiceData_2(SupplyDateOrPeriodStart, SupplyDateOrPeriodEnd, IsIssuerInVAT);
+            _invoice._33InvoiceData_2(SupplyDateOrPeriodStart, SupplyDateOrPeriodEnd, IsIssuerInVAT, CorrectiveInvIICRef,  CorrectiveInvIssueDateTime,  CorrInvType);
         }
 
         public void _34SetBuyer(string idType, string idNum, string name, string address, string town, string country)
@@ -279,9 +354,9 @@ namespace AL_Invoice_Interface_DLL
             _invoice._34SetBuyer(idType, idNum, name, address, town, country);
         }
 
-        public void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge)
+        public void _35AddLine(string name, string code, string unitOfMeasure, double quantity, double priceBeforeVat, double vatRate, double vatAmount, double priceAfterVat, bool isReverseCharge, string EX)
         {
-            _invoice._35AddLine(name, code, unitOfMeasure, quantity, priceBeforeVat, vatRate, vatAmount, priceAfterVat, isReverseCharge);
+            _invoice._35AddLine(name, code, unitOfMeasure, quantity, priceBeforeVat, vatRate, vatAmount, priceAfterVat, isReverseCharge,  EX);
         }
 
         public void _36AddPayMethod(string type, double amount, string companyCardNumber)
@@ -314,9 +389,9 @@ namespace AL_Invoice_Interface_DLL
             _invoice._42SignSoapRequest(RequestFilePathToSave, ResponseFilePathToSave);
         }
 
-        public void _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave)
+        public string _43InvoiceSendRequest(string RequestFilePathToSave, string ResponseFilePathToSave)
         {
-            _invoice._43InvoiceSendRequest(RequestFilePathToSave, ResponseFilePathToSave);
+            return (_invoice._43InvoiceSendRequest(RequestFilePathToSave, ResponseFilePathToSave));
         }
 
         // --------------------------------------------------------------------
@@ -327,16 +402,15 @@ namespace AL_Invoice_Interface_DLL
             _eInvoice._50NewInvoice();
         }
 
-        public void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string OrderReferenceID, string PeriodeDescriptionCode)
+        public void _51InvoiceData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string DueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string TaxCurrencyCode)
         {
-            _eInvoice._51InvoiceData(uuid, sendDateTime, UBLVersionID, ID, IssueDate, InvTypelistID, InvTypelistAgencyID, InvTypeValue, DocumentCurrencyCodelistID, DocumentCurrencyCodelistAgencyID, DocumentCurrencyCodeValue, OrderReferenceID, PeriodeDescriptionCode);
+            _eInvoice._51InvoiceData(uuid, sendDateTime, UBLVersionID, ID,  IssueDate, DueDate, InvTypelistID, InvTypelistAgencyID, InvTypeValue, DocumentCurrencyCodelistID, DocumentCurrencyCodelistAgencyID, DocumentCurrencyCodeValue, TaxCurrencyCode);
         }
 
-        public void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate)
+        public void _52SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate, string IIC, string iicSignature)
         {
-            _eInvoice._52SetAlFiscalNotes(issueDateTime, operatorCode, businessUnitCode, softwareCode, isBadDebtInv, amountWoVatLek, amountWithVatLek, sumOfTaxableAmountLek, fic, taxPointDate);
-       
-        }
+            _eInvoice._52SetAlFiscalNotes(issueDateTime, operatorCode, businessUnitCode, softwareCode, isBadDebtInv, amountWoVatLek, amountWithVatLek, sumOfTaxableAmountLek, fic, taxPointDate,  IIC,  iicSignature);
+               }
 
 
         public void _53AccSupParty(string EndpointID, string EndpointAgencyID, string EndpointValue, string PartyIdentificationID, string PartyIdentificationValue, string Name, string PostalAddressSchemeID, string PostalAddressSchemeAgencyID, string PostalAddressSchemeValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountrylistID, string CountrylistAgencyID, string CountrylistValue)
@@ -369,9 +443,9 @@ namespace AL_Invoice_Interface_DLL
             _eInvoice._58Delivery(ActualDeliveryDate, DeliveryLocationID, DeliveryLocationAgencyID, DeliveryLocationValue, StreetName, AdditionalStreetName, CityName, PostalZone, CountryIdentificationCode);
         }
 
-        public void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID)
+        public void _59PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID, string PayeeFinancialAccountName)
         {
-            _eInvoice._59PaymentMeans(PaymentMeansID, PaymentMeansValue, PaymentDueDate, PaymentChannelCode, PaymentIDValue, PayeeFinancialAccountID, PayeeFinancialInstID);
+            _eInvoice._59PaymentMeans(PaymentMeansID, PaymentMeansValue, PaymentDueDate, PaymentChannelCode, PaymentIDValue, PayeeFinancialAccountID, PayeeFinancialInstID,  PayeeFinancialAccountName);
         }
 
         public void _60TaxTotal(string currencyID, double Value)
@@ -379,9 +453,9 @@ namespace AL_Invoice_Interface_DLL
             _eInvoice._60TaxTotal(currencyID, Value);
         }
 
-        public void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue)
+        public void _61AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue,string TaxExemptionReasonCode, string TaxExemptionReason)
         {
-            _eInvoice._61AddTaxSubTotal(TaxableAmountCurrencyID, TaxableAmountValue, TaxAmountCurrencyID, TaxAmountValue, TaxCategoryID, TaxCategoryAgencyID, TaxCategoryValue, Percent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue);
+            _eInvoice._61AddTaxSubTotal(TaxableAmountCurrencyID, TaxableAmountValue, TaxAmountCurrencyID, TaxAmountValue, TaxCategoryID, TaxCategoryAgencyID, TaxCategoryValue, Percent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue,  TaxExemptionReasonCode,  TaxExemptionReason);
         }
 
         public void _62PaymentTermns(string Value)
@@ -399,9 +473,9 @@ namespace AL_Invoice_Interface_DLL
             _eInvoice._64AddInvoiceLine(ID, InvQtyUnitCode, InvQtyValue, LineExtensionCurrencyID, LineExtensionValue, AccountingCost, OrderLineReferenceID, TaxTotalcurrencyID, TaxTotalValue);
         }
 
-        public void _65AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue)
+        public void _65AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue, string TaxExemptionReasonCode, string TaxExemptionReason)
         {
-            _eInvoice._65AddInvLineItem(Name, SellersItemIdentification, StandardItemIdentificationID, StandardItemIdentificationAgencyID, StandardItemIdentificationValue, ClassifiedTaxCategoryID, ClassifiedTaxCategoryAgencyID, ClassifiedTaxCategoryValue, ClassifiedTaxPercent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue, PriceAmountCurrId, PriceAmountValue, BaseQuantityUnitCode, BaseQuantityValue);
+            _eInvoice._65AddInvLineItem(Name, SellersItemIdentification, StandardItemIdentificationID, StandardItemIdentificationAgencyID, StandardItemIdentificationValue, ClassifiedTaxCategoryID, ClassifiedTaxCategoryAgencyID, ClassifiedTaxCategoryValue, ClassifiedTaxPercent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue, PriceAmountCurrId, PriceAmountValue, BaseQuantityUnitCode, BaseQuantityValue, TaxExemptionReasonCode, TaxExemptionReason);
         }
 
         public void _66AddInvLineItemAllowCharge(double MultiplierFactorNumeric, string currencyID, double Amount)
@@ -429,6 +503,118 @@ namespace AL_Invoice_Interface_DLL
         public string _70InvoiceSendRequest(string requestUUID, string RequestFilePathToSave, string ResponseFilePathToSave)
         {
             return _eInvoice._70InvoiceSendRequest(requestUUID, RequestFilePathToSave, ResponseFilePathToSave);
+        }
+
+
+        // --------------------------------------------------------------------
+        // CreditNote
+        // --------------------------------------------------------------------
+        public void _350NewCreditNote()
+        {
+            _eCreditNote._350NewCreditNote();
+        }
+
+        public void _351CreditNoteData(string uuid, string sendDateTime, string UBLVersionID, string ID, string IssueDate, string DueDate, string InvTypelistID, string InvTypelistAgencyID, string InvTypeValue, string DocumentCurrencyCodelistID, string DocumentCurrencyCodelistAgencyID, string DocumentCurrencyCodeValue, string TaxCurrencyCode, string BillingReferenceID, string BillingReferenceIssueDate)
+        {
+            _eCreditNote._351CreditNoteData(uuid, sendDateTime, UBLVersionID, ID, IssueDate, DueDate, InvTypelistID, InvTypelistAgencyID, InvTypeValue, DocumentCurrencyCodelistID, DocumentCurrencyCodelistAgencyID, DocumentCurrencyCodeValue, TaxCurrencyCode,  BillingReferenceID,  BillingReferenceIssueDate);
+        }
+
+        public void _352SetAlFiscalNotes(string issueDateTime, string operatorCode, string businessUnitCode, string softwareCode, bool isBadDebtInv, double amountWoVatLek, double amountWithVatLek, double sumOfTaxableAmountLek, string fic, string taxPointDate, string IIC, string iicSignature)
+        {
+            _eCreditNote._352SetAlFiscalNotes(issueDateTime, operatorCode, businessUnitCode, softwareCode, isBadDebtInv, amountWoVatLek, amountWithVatLek, sumOfTaxableAmountLek, fic, taxPointDate, IIC, iicSignature);
+        }
+
+
+        public void _353AccSupParty(string EndpointID, string EndpointAgencyID, string EndpointValue, string PartyIdentificationID, string PartyIdentificationValue, string Name, string PostalAddressSchemeID, string PostalAddressSchemeAgencyID, string PostalAddressSchemeValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountrylistID, string CountrylistAgencyID, string CountrylistValue)
+        {
+            _eCreditNote._353AccSupParty(EndpointID, EndpointAgencyID, EndpointValue, PartyIdentificationID, PartyIdentificationValue, Name, PostalAddressSchemeID, PostalAddressSchemeAgencyID, PostalAddressSchemeValue, StreetName, AdditionalStreetName, CityName, PostalZone, CountrylistID, CountrylistAgencyID, CountrylistValue);
+        }
+
+        public void _354AccSupPartyTaxSch(string CompanyID, string CompanyAgencyID, string CompanyValue, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PartyLegalRegistrationName, string PartyLegalID, string PartyLegalAgencyID, string PartyLegalValue, string PartyLegalRegisAddrCity, string PartyLegalRegisAddrCountryIdentCode)
+        {
+            _eCreditNote._354AccSupPartyTaxSch(CompanyID, CompanyAgencyID, CompanyValue, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue, PartyLegalRegistrationName, PartyLegalID, PartyLegalAgencyID, PartyLegalValue, PartyLegalRegisAddrCity, PartyLegalRegisAddrCountryIdentCode);
+        }
+
+        public void _355AccCustParty(string EndpointID, string EndpointAgencyID, string EndpointValue, string PartyIdentificationID, string PartyIdentificationValue, string Name, string PostalAddressSchemeID, string PostalAddressSchemeAgencyID, string PostalAddressSchemeValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountrylistID, string CountrylistAgencyID, string CountrylistValue)
+        {
+            _eCreditNote._355AccCustParty(EndpointID, EndpointAgencyID, EndpointValue, PartyIdentificationID, PartyIdentificationValue, Name, PostalAddressSchemeID, PostalAddressSchemeAgencyID, PostalAddressSchemeValue, StreetName, AdditionalStreetName, CityName, PostalZone, CountrylistID, CountrylistAgencyID, CountrylistValue);
+        }
+
+        public void _356AccCustPartyTaxSch(string CompanyID, string CompanyAgencyID, string CompanyValue, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PartyLegalRegistrationName, string PartyLegalID, string PartyLegalAgencyID, string PartyLegalValue, string PartyLegalRegisAddrCity, string PartyLegalRegisAddrCountryIdentCode)
+        {
+            _eCreditNote._356AccCustPartyTaxSch(CompanyID, CompanyAgencyID, CompanyValue, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue, PartyLegalRegistrationName, PartyLegalID, PartyLegalAgencyID, PartyLegalValue, PartyLegalRegisAddrCity, PartyLegalRegisAddrCountryIdentCode);
+        }
+
+        public void _357PayeeParty(string PartyIdentificationID, string PartyIdentificationAgencyID, string PartyIdentificationValue, string Name, string PartyLegalID, string PartyLegalAgencyID, string PartyLegaValue)
+        {
+            _eCreditNote._357PayeeParty(PartyIdentificationID, PartyIdentificationAgencyID, PartyIdentificationValue, Name, PartyLegalID, PartyLegalAgencyID, PartyLegaValue);
+        }
+
+        public void _358Delivery(string ActualDeliveryDate, string DeliveryLocationID, string DeliveryLocationAgencyID, string DeliveryLocationValue, string StreetName, string AdditionalStreetName, string CityName, string PostalZone, string CountryIdentificationCode)
+        {
+            _eCreditNote._358Delivery(ActualDeliveryDate, DeliveryLocationID, DeliveryLocationAgencyID, DeliveryLocationValue, StreetName, AdditionalStreetName, CityName, PostalZone, CountryIdentificationCode);
+        }
+
+        public void _359PaymentMeans(string PaymentMeansID, string PaymentMeansValue, string PaymentDueDate, string PaymentChannelCode, string PaymentIDValue, string PayeeFinancialAccountID, string PayeeFinancialInstID, string PayeeFinancialAccountName)
+        {
+            _eCreditNote._359PaymentMeans(PaymentMeansID, PaymentMeansValue, PaymentDueDate, PaymentChannelCode, PaymentIDValue, PayeeFinancialAccountID, PayeeFinancialInstID, PayeeFinancialAccountName);
+        }
+
+        public void _360TaxTotal(string currencyID, double Value)
+        {
+            _eCreditNote._360TaxTotal(currencyID, Value);
+        }
+
+        public void _361AddTaxSubTotal(string TaxableAmountCurrencyID, double TaxableAmountValue, string TaxAmountCurrencyID, double TaxAmountValue, string TaxCategoryID, string TaxCategoryAgencyID, string TaxCategoryValue, double Percent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string TaxExemptionReasonCode, string TaxExemptionReason)
+        {
+            _eCreditNote._361AddTaxSubTotal(TaxableAmountCurrencyID, TaxableAmountValue, TaxAmountCurrencyID, TaxAmountValue, TaxCategoryID, TaxCategoryAgencyID, TaxCategoryValue, Percent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue,  TaxExemptionReasonCode,  TaxExemptionReason);
+        }
+
+        public void _362PaymentTermns(string Value)
+        {
+            _eCreditNote._362PaymentTermns(Value);
+        }
+
+        public void _363LegalMonetary(string LineExtensionID, double LineExtensionValue, string TaxExclusiveID, double TaxExclusiveValue, string TaxInclusiveID, double TaxInclusive, string AllowanceTotalID, double AllowanceTotalValue, string ChargeTotalID, double ChargeTotalValue, string PrepaidID, double PrepaidValue, string PayableRoundingID, double PayableRoundingValue, string PayableID, double PayableValue)
+        {
+            _eCreditNote._363LegalMonetary(LineExtensionID, LineExtensionValue, TaxExclusiveID, TaxExclusiveValue, TaxInclusiveID, TaxInclusive, AllowanceTotalID, AllowanceTotalValue, ChargeTotalID, ChargeTotalValue, PrepaidID, PrepaidValue, PayableRoundingID, PayableRoundingValue, PayableID, PayableValue);
+        }
+
+        public void _364AddInvoiceLine(string ID, string InvQtyUnitCode, double InvQtyValue, string LineExtensionCurrencyID, double LineExtensionValue, string AccountingCost, string OrderLineReferenceID, string TaxTotalcurrencyID, double TaxTotalValue)
+        {
+            _eCreditNote._364AddInvoiceLine(ID, InvQtyUnitCode, InvQtyValue, LineExtensionCurrencyID, LineExtensionValue, AccountingCost, OrderLineReferenceID, TaxTotalcurrencyID, TaxTotalValue);
+        }
+
+        public void _365AddInvLineItem(string Name, string SellersItemIdentification, string StandardItemIdentificationID, string StandardItemIdentificationAgencyID, string StandardItemIdentificationValue, string ClassifiedTaxCategoryID, string ClassifiedTaxCategoryAgencyID, string ClassifiedTaxCategoryValue, double ClassifiedTaxPercent, string TaxSchemeID, string TaxSchemeAgencyID, string TaxSchemeValue, string PriceAmountCurrId, double PriceAmountValue, string BaseQuantityUnitCode, double BaseQuantityValue, string TaxExemptionReasonCode, string TaxExemptionReason)
+        {
+            _eCreditNote._365AddInvLineItem(Name, SellersItemIdentification, StandardItemIdentificationID, StandardItemIdentificationAgencyID, StandardItemIdentificationValue, ClassifiedTaxCategoryID, ClassifiedTaxCategoryAgencyID, ClassifiedTaxCategoryValue, ClassifiedTaxPercent, TaxSchemeID, TaxSchemeAgencyID, TaxSchemeValue, PriceAmountCurrId, PriceAmountValue, BaseQuantityUnitCode, BaseQuantityValue,  TaxExemptionReasonCode,  TaxExemptionReason);
+        }
+
+        public void _366AddInvLineItemAllowCharge(double MultiplierFactorNumeric, string currencyID, double Amount)
+        {
+            _eCreditNote._366AddInvLineItemAllowCharge(MultiplierFactorNumeric, currencyID, Amount);
+        }
+
+
+
+        public void _367SaveInvoice(string FilePath)
+        {
+            _eCreditNote._367SaveInvoice(FilePath);
+        }
+
+        public void _368SignUBLInvoice(string RequestFilePathToSave, string ResponseFilePathToSave)
+        {
+            _eCreditNote._368SignUBLInvoice(RequestFilePathToSave, ResponseFilePathToSave);
+        }
+
+        public void _369SignSoapRequest(string RequestFilePathToSave, string ResponseFilePathToSave)
+        {
+            _eCreditNote._369SignSoapRequest(RequestFilePathToSave, ResponseFilePathToSave);
+        }
+
+        public string _370CreditNoteSendRequest(string requestUUID, string RequestFilePathToSave, string ResponseFilePathToSave)
+        {
+            return _eCreditNote._370CreditNoteSendRequest(requestUUID, RequestFilePathToSave, ResponseFilePathToSave);
         }
     }
 }

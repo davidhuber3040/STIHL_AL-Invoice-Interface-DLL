@@ -64,6 +64,8 @@ namespace AL_Invoice_Interface_DLL
 
         private void button1_Click(object sender, EventArgs e)
         {
+
+
             // 1) Globales Basis-Setup
             Global._01SetBasicData("bR3#H5uFg!aL", @"C:\Temp\AL\INTEGRATED TECH SOLUTIONS.p12", "http://80.90.92.219:2014/api/Values/GenerateIICAndIICSignature", "http://80.90.92.219:2014/api/Values/SignAndSOAPMessage", "http://80.90.92.219:2014/api/Values/SignUBL", "https://efiskalizimi-test.tatime.gov.al/FiscalizationService-v3", "https://Einvoice-test.tatime.gov.al/EinvoiceService-v1");
 
@@ -72,6 +74,8 @@ namespace AL_Invoice_Interface_DLL
 
             // 3) Neue Rechnung starten
             inv._30NewInvoice();
+
+           // inv.test();
 
             // 4) Header / Invoice-Daten
             string uuid = Guid.NewGuid().ToString();
@@ -86,7 +90,7 @@ namespace AL_Invoice_Interface_DLL
             inv._34SetBuyer("NUIS", "K12345678", "Demo Customer SHPK", "Demo Street 1", "Tirana", "ALB");
 
             // 7) Position hinzufügen
-            inv._35AddLine("Demo-Artikel", "A0001", "pcs", 2.00, 100.00, 20.00, 20.00, 120.00, false);
+            inv._35AddLine("Demo-Artikel", "A0001", "pcs", 2.00, 100.00, 20.00, 20.00, 120.00, false,"TYPE_2");
 
             // 8) Zahlungsart hinzufügen
             inv._36AddPayMethod("TRANSFER", 120.0, "");
@@ -118,14 +122,31 @@ namespace AL_Invoice_Interface_DLL
 
         private void button2_Click(object sender, EventArgs e)
         {
+            
+            
             Global._01SetBasicData("bR3#H5uFg!aL", @"C:\Temp\AL\INTEGRATED TECH SOLUTIONS.p12", "http://80.90.92.219:2014/api/Values/GenerateIICAndIICSignature", "http://80.90.92.219:2014/api/Values/SignAndSOAPMessage", "http://80.90.92.219:2014/api/Values/SignUBL", "https://efiskalizimi-test.tatime.gov.al/FiscalizationService-v3", "https://Einvoice-test.tatime.gov.al/EinvoiceService-v1");
 
             EInvoiceClass eInvoiceClass = new EInvoiceClass();
             eInvoiceClass._50NewInvoice();
             eInvoiceClass._invoice=eInvoiceClass.Create();
+
+            eInvoiceClass._64AddInvoiceLine(
+        "1",
+        "C62",
+        1,
+        "EUR",
+        100,
+        "",
+        "",
+        "EUR",
+        0
+    );
+            eInvoiceClass._65AddInvLineItem("Demo-Artikel", "A0001", "GTIN", "9", "1234567890124", "UN/ECE 5305", "6", "S", 20.0, "UN/ECE 5153", "6", "VAT", "EUR", 50.0, "pcs", 1.0,"TAXEXCODE","TAXREASON");
+
+
             eInvoiceClass._67SaveInvoice("c:\\temp\\AL\\UBLINvoice.xml");
 
-            eInvoiceClass._70InvoiceSendRequest("351249D647C96C1247131D7D82045F21", @"C:\Temp\AL\ubl_request.xml", @"C:\Temp\AL\ubl_response.xml");
+            //eInvoiceClass._70InvoiceSendRequest("351249D647C96C1247131D7D82045F21", @"C:\Temp\AL\ubl_request.xml", @"C:\Temp\AL\ubl_response.xml");
 
 
         }
@@ -156,7 +177,7 @@ namespace AL_Invoice_Interface_DLL
             inv._34SetBuyer("NUIS", "K12345678", "Demo Customer SHPK", "Demo Street 1", "Tirana", "ALB");
 
             // 7) Position hinzufügen
-            inv._35AddLine("Demo-Artikel", "A0001", "pcs", 2.00, 100.00, 20.00, 20.00, 120.00, false);
+            inv._35AddLine("Demo-Artikel", "A0001", "pcs", 2.00, 100.00, 20.00, 20.00, 120.00, false,"TYPE_2");
 
             // 8) Zahlungsart hinzufügen
             inv._36AddPayMethod("TRANSFER", 120.0, "");
@@ -181,14 +202,19 @@ namespace AL_Invoice_Interface_DLL
         private void button4_Click(object sender, EventArgs e)
         {
 
+            /*
             Global._01SetBasicData("bR3#H5uFg!aL", @"C:\Temp\AL\INTEGRATED TECH SOLUTIONS.p12", "http://80.90.92.219:2014/api/Values/GenerateIICAndIICSignature", "http://80.90.92.219:2014/api/Values/SignAndSOAPMessage", "http://80.90.92.219:2014/api/Values/SignUBL", "https://efiskalizimi-test.tatime.gov.al/FiscalizationService-v3", "https://Einvoice-test.tatime.gov.al/EinvoiceService-v1");
 
             Global._02GenerateIICAndIICSignature("M11614005F|2025-12-04T10:06:40+01:00|69|nk877lp690||co442rd108|10000.00", @"C:\Temp\AL\IIC_request.xml", @"C:\Temp\AL\IIC_response.xml");
             MessageBox.Show(Global._03GetIIC());
             MessageBox.Show(Global._04GetIICSignature());
-
+            */
 
             var einv = new EInvoiceClass();
+            
+
+
+            einv.test();
 
             DateTime now = DateTime.Now;
             DateTime nowTrunc = Global.TruncateToSeconds(now);
@@ -197,9 +223,9 @@ namespace AL_Invoice_Interface_DLL
             einv._50NewInvoice();
 
             // 2) Kopf / InvoiceData
-            einv._51InvoiceData(uuid, nowTrunc.ToString(), "2.1", "1/2025/ab001cd002", nowTrunc.ToString("yyyy-MM-dd"), "UN/ECE 1001 Subset", "6", "380", "ISO 4217 Alpha", "6", "EUR", "ORD-123", "35");
+            einv._51InvoiceData(uuid, nowTrunc.ToString(), "2.1", "1/2025/ab001cd002", nowTrunc.ToString("yyyy-MM-dd"),nowTrunc.ToString("yyyy-MM-dd"), "UN/ECE 1001 Subset", "6", "380", "ISO 4217 Alpha", "6", "EUR", "ALL");
 
-            einv._52SetAlFiscalNotes(new DateTime(2025, 12, 4, 16, 13, 47, DateTimeKind.Local).ToString(), "bm679fd207", "nk877lp690", "co442rd108", false, 10000.00, 10000.00, 10000.00, uuid, new DateTime(2025, 12, 4).ToString());
+            einv._52SetAlFiscalNotes(new DateTime(2025, 12, 4, 16, 13, 47, DateTimeKind.Local).ToString(), "bm679fd207", "nk877lp690", "co442rd108", false, 10000.00, 10000.00, 10000.00, uuid, new DateTime(2025, 12, 4).ToString(),"45435345","3454354353453543453453453");
 
 
             // 3) Seller
@@ -217,18 +243,18 @@ namespace AL_Invoice_Interface_DLL
             einv._58Delivery(nowTrunc.ToString("yyyy-MM-dd"), "GLN", "9", "1231412341324", "Rruga Dëshmorët e 4 Shkurtit", "", "Tirana", "1001", "AL");
 
             // 7) Zahlungsart
-            einv._59PaymentMeans("UN/ECE 4461", "31", nowTrunc.AddDays(14).ToString("yyyy-MM-dd"), "IBAN", "Payref1", "AL1212341234123412", "ALSTB000");
+            einv._59PaymentMeans("UN/ECE 4461", "31", nowTrunc.AddDays(14).ToString("yyyy-MM-dd"), "IBAN", "Payref1", "AL1212341234123412", "ALSTB000","Name");
 
             // 8) TaxTotal + TaxSubtotal (100 netto, 20 Steuer)
             einv._60TaxTotal("EUR", 20.0);
-            einv._61AddTaxSubTotal("EUR", 100.0, "EUR", 20.0, "UN/ECE 5305", "6", "S", 20.0, "UN/ECE 5153", "6", "VAT");
+            einv._61AddTaxSubTotal("EUR", 100.0, "EUR", 20.00, "UN/ECE 5305", "6", "S", 20.00, "UN/ECE 5153", "6", "VAT","TYPE_2","TEST");
 
             // 9) LegalMonetary (100 netto, 20 Steuer, 120 brutto)
             einv._63LegalMonetary("10",10,"EUR", 100.0, "EUR", 100.0, "EUR", 120.0, "EUR", 0.0, "EUR", 0.0, "EUR", 0.0, "EUR", 120.0);
 
             // 10) Zeile + Item + AllowanceCharge
             einv._64AddInvoiceLine("1", "pcs", 2.0, "EUR", 100.0, "", "1", "EUR", 20.0);
-            einv._65AddInvLineItem("Demo-Artikel", "A0001", "GTIN", "9", "1234567890124", "UN/ECE 5305", "6", "S", 20.0, "UN/ECE 5153", "6", "VAT", "EUR", 50.0, "pcs", 1.0);
+            einv._65AddInvLineItem("Demo-Artikel", "A0001", "GTIN", "9", "1234567890124", "UN/ECE 5305", "6", "S", 20.0, "UN/ECE 5153", "6", "VAT", "EUR", 50.0, "pcs", 1.0, "TYPE_2", "TEST");
             einv._66AddInvLineItemAllowCharge(0.0, "EUR", 0.0);
 
             // 11) UBL speichern
@@ -254,6 +280,27 @@ namespace AL_Invoice_Interface_DLL
             eInvoiceClass._68InvoiceSendRequest("351249D647C96C1247131D7D82045F21", @"C:\Temp\AL\ubl_request.xml", @"C:\Temp\AL\ubl_response.xml");
             */
 
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var einv = new ECreditNoteClass();
+
+
+
+            
+
+            DateTime now = DateTime.Now;
+            DateTime nowTrunc = Global.TruncateToSeconds(now);
+            string uuid = Guid.NewGuid().ToString();
+
+            einv._350NewCreditNote();
+
+            // 2) Kopf / InvoiceData
+            einv._351CreditNoteData(uuid, nowTrunc.ToString(), "2.1", "1/2025/ab001cd002", nowTrunc.ToString("yyyy-MM-dd"), nowTrunc.ToString("yyyy-MM-dd"), "UN/ECE 1001 Subset", "6", "380", "ISO 4217 Alpha", "6", "EUR", "ALL","dfasdf","2025-01-01");
+
+           //einv._52SetAlFiscalNotes(new DateTime(2025, 12, 4, 16, 13, 47, DateTimeKind.Local).ToString(), "bm679fd207", "nk877lp690", "co442rd108", false, 10000.00, 10000.00, 10000.00, uuid, new DateTime(2025, 12, 4).ToString(), "45435345", "3454354353453543453453453");
 
         }
     }
