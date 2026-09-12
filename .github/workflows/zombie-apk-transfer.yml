@@ -1,4 +1,4 @@
-name: Zombie APK Transfer
+name: Zombie 3D APK Transfer
 
 on:
   push:
@@ -12,23 +12,21 @@ jobs:
   transfer:
     runs-on: ubuntu-latest
     steps:
-      - name: Download APK from public release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Download verified Zombie 3D APK
         shell: bash
         run: |
           set -euo pipefail
-          gh release download zombie-defense-deluxe-v2.0-chat-transfer --repo "$GITHUB_REPOSITORY" --pattern 'ZombieDefense-Deluxe-v2.0.apk' --clobber
-          test -s ZombieDefense-Deluxe-v2.0.apk
-          SHA="$(sha256sum ZombieDefense-Deluxe-v2.0.apk | awk '{print $1}')"
-          test "$SHA" = "354cdbc2ed450c0a7517bd8a6dd10751ba71461a9b91be47f4c34a0da45ff63b"
+          curl --fail --location --retry 3 --output ZombieDefense-3D-v1.0.apk 'https://release-assets.githubusercontent.com/github-production-release-asset/1341574505/852a5b15-c12f-4ee7-9510-adf715241c0f?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-09-12T18%3A30%3A06Z&rscd=attachment%3B+filename%3DZombieDefense-3D-v1.0.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-09-12T17%3A29%3A13Z&ske=2026-09-12T18%3A30%3A06Z&sks=b&skv=2018-11-09&sig=6g0PSa5vjzmQmGeW07vHG62xRSY0saNUPGD%2Bhe51Ar0%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4OTIzNTc0NSwibmJmIjoxNzg5MjM1NDQ1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.NPgI1701gREojyL02QzvOEJr56ThPfOdY_i_3RhMXxo&response-content-disposition=attachment%3B%20filename%3DZombieDefense-3D-v1.0.apk&response-content-type=application%2Fvnd.android.package-archive'
+          test -s ZombieDefense-3D-v1.0.apk
+          SHA="$(sha256sum ZombieDefense-3D-v1.0.apk | awk '{print $1}')"
+          test "$SHA" = "47837aa676c210fbb19fb58eb3387269c6bf4ba145634813d6dcba6f834dbfc0"
           echo "Verified SHA256=$SHA"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ZombieDefense-Deluxe-v2.0-APK
-          path: ZombieDefense-Deluxe-v2.0.apk
+          name: ZombieDefense-3D-v1.0-APK
+          path: ZombieDefense-3D-v1.0.apk
           compression-level: 0
           if-no-files-found: error
           retention-days: 1
