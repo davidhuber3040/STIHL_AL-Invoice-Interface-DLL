@@ -1,0 +1,33 @@
+name: Zombie APK Transfer
+
+on:
+  push:
+    branches: [ tmp-zombie-apk-transfer ]
+    paths: [ '.github/workflows/zombie-apk-transfer.yml' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified Zombie APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output ZombieDefense-Deluxe-v2.0.apk 'https://tmpfiles.org/dl/w5wGPQJEgSUy/zombiedefense-deluxe-v2.0.apk'
+          test -s ZombieDefense-Deluxe-v2.0.apk
+          SHA="$(sha256sum ZombieDefense-Deluxe-v2.0.apk | awk '{print $1}')"
+          test "$SHA" = "354cdbc2ed450c0a7517bd8a6dd10751ba71461a9b91be47f4c34a0da45ff63b"
+          echo "Verified SHA256=$SHA"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZombieDefense-Deluxe-v2.0-APK
+          path: ZombieDefense-Deluxe-v2.0.apk
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
